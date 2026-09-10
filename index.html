@@ -1,11 +1,9 @@
-  Для того чтобы вся страница выглядела полноценно и изображение использовалось именно как фоновый баннер на всю ширину с акцентом на контент, код можно оптимизировать.
-Ниже обновлённый вариант index.html. В нём изображение выставлено полноразмерной шапкой/фоном, а поверх аккуратно встроен плеер «Европа Плюс» с темным прозрачным стилем под общую тематику:
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Европа Плюс | CS:GO Stream</title>
+    <title>Европа Плюс & CS:GO Stream Chat</title>
     <style>
         * {
             margin: 0;
@@ -15,25 +13,32 @@
 
         html, body {
             width: 100%;
-            height: 100%;
-            font-family: 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: #0b0c10;
             color: #ffffff;
-        }
-
-        .wrapper {
-            width: 100%;
-            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
+        .wrapper {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 40px;
+        }
+
+        /* Фоновый баннер */
         .hero-banner {
             width: 100%;
-            max-width: 1200px;
             position: relative;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            overflow: hidden;
         }
 
         .hero-banner img {
@@ -42,10 +47,11 @@
             display: block;
         }
 
+        /* Блок аудиоплеера */
         .player-card {
             width: 90%;
             max-width: 600px;
-            margin: -40px auto 30px auto;
+            margin: -30px auto 20px auto;
             position: relative;
             z-index: 10;
             background: rgba(20, 20, 26, 0.95);
@@ -58,9 +64,9 @@
         }
 
         .player-title {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 600;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             color: #ffaa00;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -71,28 +77,194 @@
             outline: none;
             border-radius: 30px;
         }
+
+        /* Онлайн чат */
+        .chat-card {
+            width: 90%;
+            max-width: 600px;
+            background: #14141a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-header h2 {
+            font-size: 1.1rem;
+            color: #fff;
+        }
+
+        .user-badge {
+            font-size: 0.85rem;
+            background: #2a2a36;
+            color: #ffaa00;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .chat-messages {
+            height: 250px;
+            overflow-y: auto;
+            background: #0d0d12;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .chat-msg {
+            font-size: 0.95rem;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .chat-msg .author {
+            color: #ffaa00;
+            font-weight: bold;
+            margin-right: 6px;
+        }
+
+        .chat-msg .time {
+            font-size: 0.75rem;
+            color: #666;
+            margin-left: 8px;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 12px 15px;
+            background: #1c1c24;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .chat-input-area input:focus {
+            border-color: #ffaa00;
+        }
+
+        .chat-input-area button {
+            padding: 12px 20px;
+            background: #ffaa00;
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .chat-input-area button:hover {
+            background: #e69900;
+        }
     </style>
 </head>
 <body>
 
     <div class="wrapper">
-        <!-- Основной баннер из вашего репозитория -->
+        <!-- Фоновое изображение из вашего репозитория -->
         <div class="hero-banner">
-            <img src="https://raw.githubusercontent.com/ddevelop859-hue/-/44a1541bb99fd2168288254c875d13148e225176/images/1789038451964.png" alt="CS:GO Banner">
+            <img src="https://raw.githubusercontent.com/ddevelop859-hue/-/44a1541bb99fd2168288254c875d13148e225176/images/1789038451964.png" alt="CS:GO Stream Banner">
         </div>
 
-        <!-- Карточка плеера -->
+        <!-- Аудиоплеер Европа Плюс -->
         <div class="player-card">
             <div class="player-title">Европа Плюс — Прямой эфир</div>
             <audio controls preload="none">
                 <source src="https://ep256.streamr.ru/europaplus256.mp3" type="audio/mpeg">
                 <source src="https://ep128.streamr.ru/europaplus128.mp3" type="audio/mpeg">
-                Ваш браузер не поддерживает аудио.
+                Ваш браузер не поддерживает аудиопроигрыватель.
             </audio>
+        </div>
+
+        <!-- Онлайн-чат -->
+        <div class="chat-card">
+            <div class="chat-header">
+                <h2>Онлайн Чат</h2>
+                <div class="user-badge" id="userBadge">ID: ...</div>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-msg">
+                    <span class="author">Система:</span> Добро пожаловать в чат!
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <input type="text" id="messageInput" placeholder="Введите сообщение..." onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()">Отправить</button>
+            </div>
         </div>
     </div>
 
+    <script>
+        // Рандомное присвоение ID пользователю при входе
+        const randomId = 'User_' + Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('userBadge').innerText = randomId;
+
+        // Функция отправки сообщения
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+
+            if (text === '') return;
+
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'chat-msg';
+            msgDiv.innerHTML = `<span class="author">${randomId}:</span> ${escapeHTML(text)} <span class="time">${timeStr}</span>`;
+
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            input.value = '';
+        }
+
+        // Отправка по нажатию Enter
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Защита от спецсимволов HTML
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+    </script>
+
 </body>
 </html>
-
-Этот файл полностью самодостаточен для размещения в репозитории на GitHub.
