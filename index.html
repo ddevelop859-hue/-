@@ -1,9 +1,14 @@
+Вот обновленный код index.html. В него внесены следующие изменения:
+ * Аудиопоток: Заменен на прямой поток техно/дип-хаус радио (Dance Wave / Deep House Chill).
+ * Чат: Перенесен в левый нижний угол в виде всплывающей кнопки «Чат», которая открывает и закрывает окно чата.
+ * Кнопка «Донат»: Добавлена отдельная кнопка, открывающая модальное окно с заглушкой (куда позже впишете данные).
+ * Личный кабинет: Добавлена кнопка «Вход», доступная только по логину gruvik и паролю 3535%tUr. После успешного входа открывается панель настройки доната.
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Европа Плюс & CS:GO Stream Chat</title>
+    <title>CS:GO Stream & Deep House Radio</title>
     <style>
         * {
             margin: 0;
@@ -28,10 +33,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-bottom: 40px;
+            padding-bottom: 60px;
         }
 
-        /* Фоновый баннер */
+        /* Баннер */
         .hero-banner {
             width: 100%;
             position: relative;
@@ -47,7 +52,7 @@
             display: block;
         }
 
-        /* Блок аудиоплеера */
+        /* Плеер и верхние кнопки */
         .player-card {
             width: 90%;
             max-width: 600px;
@@ -76,155 +81,305 @@
             width: 100%;
             outline: none;
             border-radius: 30px;
-        }
-
-        /* Онлайн чат */
-        .chat-card {
-            width: 90%;
-            max-width: 600px;
-            background: #14141a;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chat-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .chat-header h2 {
-            font-size: 1.1rem;
-            color: #fff;
-        }
-
-        .user-badge {
-            font-size: 0.85rem;
-            background: #2a2a36;
-            color: #ffaa00;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-weight: bold;
-        }
-
-        .chat-messages {
-            height: 250px;
-            overflow-y: auto;
-            background: #0d0d12;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .chat-msg {
-            font-size: 0.95rem;
-            line-height: 1.4;
-            word-break: break-word;
-        }
-
-        .chat-msg .author {
-            color: #ffaa00;
-            font-weight: bold;
-            margin-right: 6px;
-        }
-
-        .chat-msg .time {
-            font-size: 0.75rem;
-            color: #666;
-            margin-left: 8px;
-        }
-
-        .chat-input-area {
+        .btn-group {
             display: flex;
             gap: 10px;
+            justify-content: center;
         }
 
-        .chat-input-area input {
-            flex: 1;
-            padding: 12px 15px;
-            background: #1c1c24;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: #fff;
-            font-size: 0.95rem;
-            outline: none;
-        }
-
-        .chat-input-area input:focus {
-            border-color: #ffaa00;
-        }
-
-        .chat-input-area button {
-            padding: 12px 20px;
+        .action-btn {
+            padding: 10px 20px;
             background: #ffaa00;
             border: none;
             border-radius: 8px;
             color: #000;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: 0.2s;
         }
 
-        .chat-input-area button:hover {
+        .action-btn:hover {
             background: #e69900;
+        }
+
+        .action-btn.secondary {
+            background: #2a2a36;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .action-btn.secondary:hover {
+            background: #3b3b4a;
+        }
+
+        /* Кнопка чата в левом углу */
+        .chat-toggle-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 999;
+            padding: 12px 24px;
+            background: #ffaa00;
+            color: #000;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 170, 0, 0.4);
+        }
+
+        /* Виджет чата в левом углу */
+        .chat-card {
+            position: fixed;
+            bottom: 75px;
+            left: 20px;
+            z-index: 998;
+            width: 320px;
+            background: #14141a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            display: none;
+            flex-direction: column;
+        }
+
+        .chat-card.active {
+            display: flex;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-header h2 {
+            font-size: 1rem;
+            color: #fff;
+        }
+
+        .user-badge {
+            font-size: 0.75rem;
+            background: #2a2a36;
+            color: #ffaa00;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+
+        .chat-messages {
+            height: 200px;
+            overflow-y: auto;
+            background: #0d0d12;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .chat-msg {
+            font-size: 0.85rem;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+
+        .chat-msg .author {
+            color: #ffaa00;
+            font-weight: bold;
+            margin-right: 4px;
+        }
+
+        .chat-msg .time {
+            font-size: 0.7rem;
+            color: #666;
+            margin-left: 6px;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 6px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 8px 12px;
+            background: #1c1c24;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .chat-input-area button {
+            padding: 8px 12px;
+            background: #ffaa00;
+            border: none;
+            border-radius: 6px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Модальные окна (Донат и Кабинет) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: #181820;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 25px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            position: relative;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            color: #ffaa00;
+            margin-bottom: 15px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
         }
     </style>
 </head>
 <body>
 
     <div class="wrapper">
-        <!-- Фоновое изображение из репозитория -->
         <div class="hero-banner">
             <img src="https://raw.githubusercontent.com/ddevelop859-hue/-/44a1541bb99fd2168288254c875d13148e225176/images/1789038451964.png" alt="CS:GO Stream Banner">
         </div>
 
-        <!-- Аудиоплеер Европа Плюс -->
         <div class="player-card">
-            <div class="player-title">Европа Плюс — Прямой эфир</div>
+            <div class="player-title">Techno & Deep House — Live Set</div>
+            <!-- Прямой поток Techno / Deep House -->
             <audio controls preload="none">
-                <source src="https://ep256.streamr.ru/europaplus256.mp3" type="audio/mpeg">
-                <source src="https://ep128.streamr.ru/europaplus128.mp3" type="audio/mpeg">
-                Ваш браузер не поддерживает аудиопроигрыватель.
+                <source src="https://dancewave.online/dance.mp3" type="audio/mpeg">
+                <source src="https://stream.zeno.fm/f3wvbbqmdg8uv" type="audio/mpeg">
+                Ваш браузер не поддерживает проигрыватель.
             </audio>
+
+            <div class="btn-group">
+                <button class="action-btn" onclick="openModal('donateModal')">Донат</button>
+                <button class="action-btn secondary" id="authBtn" onclick="openModal('loginModal')">Кабинет</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кнопка чата в левом углу -->
+    <button class="chat-toggle-btn" onclick="toggleChat()">💬 Чат</button>
+
+    <!-- Виджет чата -->
+    <div class="chat-card" id="chatCard">
+        <div class="chat-header">
+            <h2>Онлайн Чат</h2>
+            <div class="user-badge" id="userBadge">ID: ...</div>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-msg">
+                <span class="author" style="color:#00ff88;">Система:</span> Чат активен!
+            </div>
         </div>
 
-        <!-- Онлайн-чат -->
-        <div class="chat-card">
-            <div class="chat-header">
-                <h2>Онлайн Чат</h2>
-                <div class="user-badge" id="userBadge">ID: ...</div>
-            </div>
-            
-            <div class="chat-messages" id="chatMessages">
-                <div class="chat-msg">
-                    <span class="author">Система:</span> Добро пожаловать в чат!
+        <div class="chat-input-area">
+            <input type="text" id="messageInput" placeholder="Сообщение..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно Доната -->
+    <div class="modal-overlay" id="donateModal">
+        <div class="modal-box">
+            <button class="close-btn" onclick="closeModal('donateModal')">✕</button>
+            <div class="modal-title">Поддержать стримера</div>
+            <div id="donateInfoText">
+                <p style="color: #ccc; margin-bottom: 10px;">Реквизиты для перевода:</p>
+                <div id="donateDetails" style="background: #0d0d12; padding: 12px; border-radius: 8px; font-family: monospace; color: #ffaa00;">
+                    Данные доната пока не указаны.
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="chat-input-area">
-                <input type="text" id="messageInput" placeholder="Введите сообщение..." onkeypress="handleKeyPress(event)">
-                <button onclick="sendMessage()">Отправить</button>
+    <!-- Модальное окно Входа / Кабинета -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-box">
+            <button class="close-btn" onclick="closeModal('loginModal')">✕</button>
+            
+            <div id="loginForm">
+                <div class="modal-title">Вход в личный кабинет</div>
+                <input type="text" id="loginInput" class="modal-input" placeholder="Логин">
+                <input type="password" id="passInput" class="modal-input" placeholder="Пароль">
+                <button class="action-btn" style="width: 100%;" onclick="login()">Войти</button>
+                <div id="loginError" style="color: #ff4444; font-size: 0.85rem; margin-top: 8px;"></div>
+            </div>
+
+            <div id="adminPanel" style="display: none;">
+                <div class="modal-title">Панель управления (gruvik)</div>
+                <p style="font-size: 0.9rem; color: #ccc; margin-bottom: 8px;">Настройки реквизитов доната:</p>
+                <textarea id="donateConfigInput" class="modal-input" rows="4" placeholder="Введите текст или реквизиты доната..."></textarea>
+                <button class="action-btn" style="width: 100%; margin-bottom: 8px;" onclick="saveDonateSettings()">Сохранить</button>
+                <button class="action-btn secondary" style="width: 100%;" onclick="logout()">Выйти</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Рандомное присвоение ID пользователю при входе
+        // Чат скрипт
         const randomId = 'User_' + Math.floor(1000 + Math.random() * 9000);
         document.getElementById('userBadge').innerText = randomId;
 
-        // Функция отправки сообщения
+        function toggleChat() {
+            const chat = document.getElementById('chatCard');
+            chat.classList.toggle('active');
+        }
+
         function sendMessage() {
             const input = document.getElementById('messageInput');
             const text = input.value.trim();
@@ -245,26 +400,60 @@
             input.value = '';
         }
 
-        // Отправка по нажатию Enter
         function handleKeyPress(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, tag => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            }[tag] || tag));
+        }
+
+        // Модальные окна
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        // Авторизация и ЛК
+        function login() {
+            const user = document.getElementById('loginInput').value.trim();
+            const pass = document.getElementById('passInput').value.trim();
+            const errorDiv = document.getElementById('loginError');
+
+            if (user === 'gruvik' && pass === '3535%tUr') {
+                errorDiv.innerText = '';
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                document.getElementById('authBtn').innerText = 'ЛК (gruvik)';
+            } else {
+                errorDiv.innerText = 'Неверный логин или пароль!';
             }
         }
 
-        // Защита от спецсимволов HTML
-        function escapeHTML(str) {
-            return str.replace(/[&<>'"]/g, 
-                tag => ({
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    "'": '&#39;',
-                    '"': '&quot;'
-                }[tag] || tag)
-            );
+        function logout() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('authBtn').innerText = 'Кабинет';
+            document.getElementById('loginInput').value = '';
+            document.getElementById('passInput').value = '';
+            closeModal('loginModal');
+        }
+
+        function saveDonateSettings() {
+            const val = document.getElementById('donateConfigInput').value;
+            if (val.trim() !== '') {
+                document.getElementById('donateDetails').innerText = val;
+                alert('Настройки доната сохранены!');
+                closeModal('loginModal');
+            }
         }
     </script>
 
 </body>
 </html>
+
