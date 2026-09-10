@@ -1,8 +1,3 @@
-Вот обновленный код index.html. В него внесены следующие изменения:
- * Аудиопоток: Заменен на прямой поток техно/дип-хаус радио (Dance Wave / Deep House Chill).
- * Чат: Перенесен в левый нижний угол в виде всплывающей кнопки «Чат», которая открывает и закрывает окно чата.
- * Кнопка «Донат»: Добавлена отдельная кнопка, открывающая модальное окно с заглушкой (куда позже впишете данные).
- * Личный кабинет: Добавлена кнопка «Вход», доступная только по логину gruvik и паролю 3535%tUr. После успешного входа открывается панель настройки доната.
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -25,6 +20,36 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Эффект цветомузыки по бокам */
+        .music-visualizer-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            box-shadow: inset 0 0 100px rgba(0, 212, 255, 0.4);
+        }
+
+        .music-visualizer-bg.active {
+            opacity: 1;
+            animation: colorPulse 2s infinite alternate ease-in-out;
+        }
+
+        @keyframes colorPulse {
+            0% {
+                box-shadow: inset 150px 0 120px rgba(0, 212, 255, 0.5), inset -150px 0 120px rgba(255, 0, 128, 0.5);
+            }
+            100% {
+                box-shadow: inset 200px 0 180px rgba(120, 0, 255, 0.7), inset -200px 0 180px rgba(0, 255, 150, 0.7);
+            }
         }
 
         .wrapper {
@@ -34,6 +59,8 @@
             flex-direction: column;
             align-items: center;
             padding-bottom: 60px;
+            position: relative;
+            z-index: 5;
         }
 
         /* Баннер */
@@ -117,10 +144,10 @@
 
         /* Кнопка чата в левом углу */
         .chat-toggle-btn {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            z-index: 999;
+            position: fixed !important;
+            bottom: 20px !important;
+            left: 20px !important;
+            z-index: 99999 !important;
             padding: 12px 24px;
             background: #ffaa00;
             color: #000;
@@ -128,27 +155,23 @@
             border-radius: 30px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255, 170, 0, 0.4);
+            box-shadow: 0 4px 15px rgba(255, 170, 0, 0.5);
         }
 
-        /* Виджет чата в левом углу */
+        /* Окно чата в левом углу */
         .chat-card {
-            position: fixed;
-            bottom: 75px;
-            left: 20px;
-            z-index: 998;
+            position: fixed !important;
+            bottom: 75px !important;
+            left: 20px !important;
+            z-index: 99999 !important;
             width: 320px;
             background: #14141a;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 16px;
             padding: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
             display: none;
             flex-direction: column;
-        }
-
-        .chat-card.active {
-            display: flex;
         }
 
         .chat-header {
@@ -175,7 +198,7 @@
         }
 
         .chat-messages {
-            height: 200px;
+            height: 220px;
             overflow-y: auto;
             background: #0d0d12;
             border-radius: 8px;
@@ -231,15 +254,15 @@
             cursor: pointer;
         }
 
-        /* Модальные окна (Донат и Кабинет) */
+        /* Модальные окна */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 100000;
             display: none;
             justify-content: center;
             align-items: center;
@@ -290,18 +313,20 @@
 </head>
 <body>
 
+    <!-- Эффект цветомузыки по бокам -->
+    <div class="music-visualizer-bg" id="musicVisualizer"></div>
+
     <div class="wrapper">
         <div class="hero-banner">
             <img src="https://raw.githubusercontent.com/ddevelop859-hue/-/44a1541bb99fd2168288254c875d13148e225176/images/1789038451964.png" alt="CS:GO Stream Banner">
         </div>
 
         <div class="player-card">
-            <div class="player-title">Techno & Deep House — Live Set</div>
+            <div class="player-title">Techno & Deep House — Live Stream</div>
             <!-- Прямой поток Techno / Deep House -->
-            <audio controls preload="none">
+            <audio id="radioPlayer" controls preload="none">
                 <source src="https://dancewave.online/dance.mp3" type="audio/mpeg">
-                <source src="https://stream.zeno.fm/f3wvbbqmdg8uv" type="audio/mpeg">
-                Ваш браузер не поддерживает проигрыватель.
+                Ваш браузер не поддерживает аудиопроигрыватель.
             </audio>
 
             <div class="btn-group">
@@ -311,7 +336,7 @@
         </div>
     </div>
 
-    <!-- Кнопка чата в левом углу -->
+    <!-- Кнопка чата -->
     <button class="chat-toggle-btn" onclick="toggleChat()">💬 Чат</button>
 
     <!-- Виджет чата -->
@@ -323,12 +348,12 @@
         
         <div class="chat-messages" id="chatMessages">
             <div class="chat-msg">
-                <span class="author" style="color:#00ff88;">Система:</span> Чат активен!
+                <span class="author" style="color:#00ff88;">Система:</span> Чат открыт!
             </div>
         </div>
 
         <div class="chat-input-area">
-            <input type="text" id="messageInput" placeholder="Сообщение..." onkeypress="handleKeyPress(event)">
+            <input type="text" id="messageInput" placeholder="Введите сообщение..." onkeypress="handleKeyPress(event)">
             <button onclick="sendMessage()">➤</button>
         </div>
     </div>
@@ -347,7 +372,7 @@
         </div>
     </div>
 
-    <!-- Модальное окно Входа / Кабинета -->
+    <!-- Модальное окно Личного Кабинета -->
     <div class="modal-overlay" id="loginModal">
         <div class="modal-box">
             <button class="close-btn" onclick="closeModal('loginModal')">✕</button>
@@ -371,15 +396,37 @@
     </div>
 
     <script>
-        // Чат скрипт
+        // Управление цветомузыкой по бокам при включении/выключении радио
+        const radioPlayer = document.getElementById('radioPlayer');
+        const visualizer = document.getElementById('musicVisualizer');
+
+        radioPlayer.addEventListener('play', () => {
+            visualizer.classList.add('active');
+        });
+
+        radioPlayer.addEventListener('pause', () => {
+            visualizer.classList.remove('active');
+        });
+
+        radioPlayer.addEventListener('ended', () => {
+            visualizer.classList.remove('active');
+        });
+
+        // Случайный ID пользователя
         const randomId = 'User_' + Math.floor(1000 + Math.random() * 9000);
         document.getElementById('userBadge').innerText = randomId;
 
+        // Открытие/закрытие чата
         function toggleChat() {
             const chat = document.getElementById('chatCard');
-            chat.classList.toggle('active');
+            if (chat.style.display === 'flex') {
+                chat.style.display = 'none';
+            } else {
+                chat.style.display = 'flex';
+            }
         }
 
+        // Отправка сообщений
         function sendMessage() {
             const input = document.getElementById('messageInput');
             const text = input.value.trim();
@@ -419,7 +466,7 @@
             document.getElementById(id).classList.remove('active');
         }
 
-        // Авторизация и ЛК
+        // Авторизация в ЛК (gruvik / 3535%tUr)
         function login() {
             const user = document.getElementById('loginInput').value.trim();
             const pass = document.getElementById('passInput').value.trim();
