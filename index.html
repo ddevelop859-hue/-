@@ -35,7 +35,6 @@
             z-index: 1;
             opacity: 0;
             transition: opacity 0.5s ease;
-            box-shadow: inset 0 0 100px rgba(0, 212, 255, 0.4);
         }
 
         .music-visualizer-bg.active {
@@ -45,11 +44,72 @@
 
         @keyframes colorPulse {
             0% {
-                box-shadow: inset 150px 0 120px rgba(0, 212, 255, 0.5), inset -150px 0 120px rgba(255, 0, 128, 0.5);
+                box-shadow: inset 150px 0 120px rgba(0, 255, 136, 0.4), inset -150px 0 120px rgba(255, 0, 128, 0.4);
             }
             100% {
-                box-shadow: inset 200px 0 180px rgba(120, 0, 255, 0.7), inset -200px 0 180px rgba(0, 255, 150, 0.7);
+                box-shadow: inset 200px 0 180px rgba(0, 212, 255, 0.6), inset -200px 0 180px rgba(120, 0, 255, 0.6);
             }
+        }
+
+        /* Кнопка радио в левом верхнем углу */
+        .radio-top-btn {
+            position: fixed !important;
+            top: 20px !important;
+            left: 20px !important;
+            z-index: 999999 !important;
+            width: 50px;
+            height: 50px;
+            background: #14141a;
+            border: 2px solid #00ff88;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+            transition: 0.3s;
+        }
+
+        .radio-top-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 25px rgba(0, 255, 136, 0.7);
+        }
+
+        .radio-top-btn svg {
+            width: 26px;
+            height: 26px;
+            fill: #00ff88;
+            transition: transform 0.3s linear;
+        }
+
+        .radio-top-btn.playing svg {
+            animation: spinLeaf 3s linear infinite;
+        }
+
+        @keyframes spinLeaf {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Кнопка чата в правом верхнем углу */
+        .chat-top-btn {
+            position: fixed !important;
+            top: 20px !important;
+            right: 20px !important;
+            z-index: 999999 !important;
+            padding: 10px 20px;
+            background: #ffaa00;
+            color: #000;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 170, 0, 0.5);
+            transition: 0.3s;
+        }
+
+        .chat-top-btn:hover {
+            transform: scale(1.05);
         }
 
         .wrapper {
@@ -58,6 +118,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding-top: 80px;
             padding-bottom: 60px;
             position: relative;
             z-index: 5;
@@ -65,12 +126,13 @@
 
         /* Баннер */
         .hero-banner {
-            width: 100%;
+            width: 90%;
+            max-width: 800px;
             position: relative;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
+            border-radius: 16px;
             overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .hero-banner img {
@@ -79,11 +141,11 @@
             display: block;
         }
 
-        /* Плеер и верхние кнопки */
+        /* Блок кнопок управления */
         .player-card {
             width: 90%;
-            max-width: 600px;
-            margin: -30px auto 20px auto;
+            max-width: 500px;
+            margin: 20px auto;
             position: relative;
             z-index: 10;
             background: rgba(20, 20, 26, 0.95);
@@ -96,19 +158,12 @@
         }
 
         .player-title {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             color: #ffaa00;
             text-transform: uppercase;
             letter-spacing: 1px;
-        }
-
-        audio {
-            width: 100%;
-            outline: none;
-            border-radius: 30px;
-            margin-bottom: 15px;
         }
 
         .btn-group {
@@ -142,29 +197,13 @@
             background: #3b3b4a;
         }
 
-        /* Кнопка чата в левом углу */
-        .chat-toggle-btn {
-            position: fixed !important;
-            bottom: 20px !important;
-            left: 20px !important;
-            z-index: 99999 !important;
-            padding: 12px 24px;
-            background: #ffaa00;
-            color: #000;
-            border: none;
-            border-radius: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255, 170, 0, 0.5);
-        }
-
-        /* Окно чата в левом углу */
+        /* Выпадающее окно чата (в правом верхнем углу под кнопкой) */
         .chat-card {
             position: fixed !important;
-            bottom: 75px !important;
-            left: 20px !important;
-            z-index: 99999 !important;
-            width: 320px;
+            top: 75px !important;
+            right: 20px !important;
+            z-index: 999999 !important;
+            width: 300px;
             background: #14141a;
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 16px;
@@ -198,7 +237,7 @@
         }
 
         .chat-messages {
-            height: 220px;
+            height: 200px;
             overflow-y: auto;
             background: #0d0d12;
             border-radius: 8px;
@@ -262,7 +301,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.8);
-            z-index: 100000;
+            z-index: 1000000;
             display: none;
             justify-content: center;
             align-items: center;
@@ -316,19 +355,29 @@
     <!-- Эффект цветомузыки по бокам -->
     <div class="music-visualizer-bg" id="musicVisualizer"></div>
 
+    <!-- Аудио поток радио -->
+    <audio id="radioPlayer" preload="none">
+        <source src="https://dancewave.online/dance.mp3" type="audio/mpeg">
+        Ваш браузер не поддерживает аудиопроигрыватель.
+    </audio>
+
+    <!-- Кнопка Радио (Левый верхний угол с листком конопли) -->
+    <div class="radio-top-btn" id="radioBtn" onclick="toggleRadio()" title="Включить / Выключить радио">
+        <svg viewBox="0 0 24 24">
+            <path d="M12,2C12,2 8,6.5 8,11C8,13.4 9,15.5 10.5,17L7,21L12,19.5L17,21L13.5,17C15,15.5 16,13.4 16,11C16,6.5 12,2 12,2Z"/>
+        </svg>
+    </div>
+
+    <!-- Кнопка Чат (Правый верхний угол) -->
+    <button class="chat-top-btn" onclick="toggleChat()">💬 Чат</button>
+
     <div class="wrapper">
         <div class="hero-banner">
             <img src="https://raw.githubusercontent.com/ddevelop859-hue/-/44a1541bb99fd2168288254c875d13148e225176/images/1789038451964.png" alt="CS:GO Stream Banner">
         </div>
 
         <div class="player-card">
-            <div class="player-title">Techno & Deep House — Live Stream</div>
-            <!-- Прямой поток Techno / Deep House -->
-            <audio id="radioPlayer" controls preload="none">
-                <source src="https://dancewave.online/dance.mp3" type="audio/mpeg">
-                Ваш браузер не поддерживает аудиопроигрыватель.
-            </audio>
-
+            <div class="player-title">Techno & Deep House Radio</div>
             <div class="btn-group">
                 <button class="action-btn" onclick="openModal('donateModal')">Донат</button>
                 <button class="action-btn secondary" id="authBtn" onclick="openModal('loginModal')">Кабинет</button>
@@ -336,10 +385,7 @@
         </div>
     </div>
 
-    <!-- Кнопка чата -->
-    <button class="chat-toggle-btn" onclick="toggleChat()">💬 Чат</button>
-
-    <!-- Виджет чата -->
+    <!-- Виджет чата (в правом верхнем углу) -->
     <div class="chat-card" id="chatCard">
         <div class="chat-header">
             <h2>Онлайн Чат</h2>
@@ -348,12 +394,12 @@
         
         <div class="chat-messages" id="chatMessages">
             <div class="chat-msg">
-                <span class="author" style="color:#00ff88;">Система:</span> Чат открыт!
+                <span class="author" style="color:#00ff88;">Система:</span> Чат активен!
             </div>
         </div>
 
         <div class="chat-input-area">
-            <input type="text" id="messageInput" placeholder="Введите сообщение..." onkeypress="handleKeyPress(event)">
+            <input type="text" id="messageInput" placeholder="Сообщение..." onkeypress="handleKeyPress(event)">
             <button onclick="sendMessage()">➤</button>
         </div>
     </div>
@@ -396,41 +442,38 @@
     </div>
 
     <script>
-        // Управление цветомузыкой по бокам при включении/выключении радио
+        // Управление радио и вращением листка конопли
         const radioPlayer = document.getElementById('radioPlayer');
+        const radioBtn = document.getElementById('radioBtn');
         const visualizer = document.getElementById('musicVisualizer');
 
-        radioPlayer.addEventListener('play', () => {
-            visualizer.classList.add('active');
-        });
+        function toggleRadio() {
+            if (radioPlayer.paused) {
+                radioPlayer.play().then(() => {
+                    radioBtn.classList.add('playing');
+                    visualizer.classList.add('active');
+                }).catch(e => console.log("Ошибка воспроизведения:", e));
+            } else {
+                radioPlayer.pause();
+                radioBtn.classList.remove('playing');
+                visualizer.classList.remove('active');
+            }
+        }
 
-        radioPlayer.addEventListener('pause', () => {
-            visualizer.classList.remove('active');
-        });
-
-        radioPlayer.addEventListener('ended', () => {
-            visualizer.classList.remove('active');
-        });
-
-        // Случайный ID пользователя
+        // Генерация случайного ID для чата
         const randomId = 'User_' + Math.floor(1000 + Math.random() * 9000);
         document.getElementById('userBadge').innerText = randomId;
 
         // Открытие/закрытие чата
         function toggleChat() {
             const chat = document.getElementById('chatCard');
-            if (chat.style.display === 'flex') {
-                chat.style.display = 'none';
-            } else {
-                chat.style.display = 'flex';
-            }
+            chat.style.display = (chat.style.display === 'flex') ? 'none' : 'flex';
         }
 
         // Отправка сообщений
         function sendMessage() {
             const input = document.getElementById('messageInput');
             const text = input.value.trim();
-
             if (text === '') return;
 
             const now = new Date();
@@ -443,7 +486,6 @@
             const chatMessages = document.getElementById('chatMessages');
             chatMessages.appendChild(msgDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
-
             input.value = '';
         }
 
@@ -458,13 +500,8 @@
         }
 
         // Модальные окна
-        function openModal(id) {
-            document.getElementById(id).classList.add('active');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.remove('active');
-        }
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
         // Авторизация в ЛК (gruvik / 3535%tUr)
         function login() {
@@ -500,7 +537,6 @@
             }
         }
     </script>
-
 </body>
 </html>
 
