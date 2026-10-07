@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Михаил Грувик — CS:GO Stream & Club Radio</title>
     <style>
         * {
@@ -141,7 +144,7 @@
             z-index: 5;
         }
 
-        /* Баннер и интерактивные кнопки поверх/под ним */
+        /* Баннер и интерактивные кнопки под ним */
         .hero-banner-container {
             width: 92%;
             max-width: 900px;
@@ -167,7 +170,7 @@
             display: block;
         }
 
-        /* Панель интерактивных кнопок под баннером (Twitch + соцсети с баннера) */
+        /* Панель интерактивных кнопок под баннером */
         .banner-buttons-bar {
             display: flex;
             flex-wrap: wrap;
@@ -540,8 +543,8 @@
     <!-- Холст для генерации неоновых молний по бокам под бит -->
     <canvas id="lightningCanvas"></canvas>
 
-    <!-- Аудио плеер (автоматически проверяет все возможные названия вашего трека на GitHub) -->
-    <audio id="radioPlayer" loop preload="auto" autoplay>
+    <!-- Аудио плеер -->
+    <audio id="radioPlayer" loop preload="auto" autoplay crossorigin="anonymous">
         <source id="audioSource" src="Orbital_-_Technologic_Park_(SkySound.cc).mp3" type="audio/mpeg">
         Ваш браузер не поддерживает аудиопроигрыватель.
     </audio>
@@ -564,7 +567,6 @@
         <!-- Контейнер Баннера + Кнопки -->
         <div class="hero-banner-container">
             <div class="hero-banner" id="heroBanner" onclick="playAudio()" style="cursor: pointer;" title="Нажмите для включения трека и молний">
-                <!-- Умная загрузка баннера: ищет ваш загруженный banner в корне или папке images -->
                 <img id="bannerImg" src="banner.jpg" alt="Михаил Грувик — CS:GO Stream Banner">
             </div>
 
@@ -594,7 +596,7 @@
             <div class="player-title">⚡ Club Rave & CS:GO Beats ⚡</div>
             <div class="track-status">
                 <span class="status-dot" id="statusDot"></span>
-                <span id="trackStatusText">Нажмите кнопку Play или войдите на стрим</span>
+                <span id="trackStatusText">Нажмите в любом месте экрана для запуска звука ⚡</span>
             </div>
 
             <!-- Мини-эквалайзер -->
@@ -680,11 +682,23 @@
     </div>
 
     <script>
-        // ================= АВТОПОИСК БАННЕРА И ТРЕКА В ВАШЕМ GITHUB =================
+        // ================= УМНОЕ АВТООПРЕДЕЛЕНИЕ БАННЕРА И ТРЕКА ЧЕРЕЗ GITHUB API =================
+        const bannerImg = document.getElementById('bannerImg');
+        const radioPlayer = document.getElementById('radioPlayer');
+        const audioSource = document.getElementById('audioSource');
+        const radioBtn = document.getElementById('radioBtn');
+        const visualizerBg = document.getElementById('musicVisualizer');
+        const statusDot = document.getElementById('statusDot');
+        const trackStatusText = document.getElementById('trackStatusText');
+        const heroBanner = document.getElementById('heroBanner');
+        const eqBars = document.querySelectorAll('.eq-bar');
+
         const bannerCandidates = [
             'banner.jpg',
             'banner.png',
             'banner.jpeg',
+            'Banner.jpg',
+            'Banner.png',
             'images/banner.jpg',
             'images/banner.png',
             'images/1789038451964.png',
@@ -695,7 +709,6 @@
             'https://raw.githubusercontent.com/ddevelop859-hue/-/44a1541bb99fd2168288254c875d13148e225176/images/1789038451964.png'
         ];
         let bannerIdx = 0;
-        const bannerImg = document.getElementById('bannerImg');
         bannerImg.onerror = function() {
             bannerIdx++;
             if (bannerIdx < bannerCandidates.length) {
@@ -703,13 +716,11 @@
             }
         };
 
-        // Список возможных путей к вашему треку на GitHub
         const trackCandidates = [
             localStorage.getItem('gruvik_track_url'),
             'Orbital_-_Technologic_Park_(SkySound.cc).mp3',
             'track.mp3',
             'music.mp3',
-            'audio.mp3',
             'images/Orbital_-_Technologic_Park_(SkySound.cc).mp3',
             'images/track.mp3',
             'https://raw.githubusercontent.com/ddevelop859-hue/-/main/Orbital_-_Technologic_Park_(SkySound.cc).mp3',
@@ -721,33 +732,62 @@
         let GITHUB_TRACK_URL = trackCandidates[0];
         const RADIO_STREAM_URL = 'https://dancewave.online/dance.mp3';
 
-        const radioPlayer = document.getElementById('radioPlayer');
-        const audioSource = document.getElementById('audioSource');
-        const radioBtn = document.getElementById('radioBtn');
-        const visualizerBg = document.getElementById('musicVisualizer');
-        const statusDot = document.getElementById('statusDot');
-        const trackStatusText = document.getElementById('trackStatusText');
-        const heroBanner = document.getElementById('heroBanner');
-        const eqBars = document.querySelectorAll('.eq-bar');
+        // Автоматический поиск точных имен файлов в вашем репозитории ddevelop859-hue/-
+        async function autoDetectFromGitHubRepo() {
+            try {
+                const endpoints = [
+                    'https://api.github.com/repos/ddevelop859-hue/-/contents/',
+                    'https://api.github.com/repos/ddevelop859-hue/-/contents/images'
+                ];
+                let allFiles = [];
+                for (const url of endpoints) {
+                    const res = await fetch(url);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (Array.isArray(data)) allFiles = allFiles.concat(data);
+                    }
+                }
 
-        let currentMode = 'track'; // 'track' или 'radio'
+                // Ищем любой загруженный .mp3 файл в репозитории
+                const mp3File = allFiles.find(f => f.name && /\.(mp3|wav|ogg)$/i.test(f.name));
+                if (mp3File && mp3File.download_url && !localStorage.getItem('gruvik_track_url')) {
+                    GITHUB_TRACK_URL = mp3File.download_url;
+                    if (currentMode === 'track' && radioPlayer.paused) {
+                        audioSource.src = GITHUB_TRACK_URL;
+                        radioPlayer.load();
+                    }
+                }
+
+                // Ищем загруженный баннер (приоритет файлу со словом banner или новому изображению)
+                const imgFiles = allFiles.filter(f => f.name && /\.(jpg|jpeg|png|webp)$/i.test(f.name));
+                const preferredBanner = imgFiles.find(f => /banner|watermarked/i.test(f.name))
+                    || imgFiles.find(f => f.name !== '1789038451964.png')
+                    || imgFiles[0];
+
+                if (preferredBanner && preferredBanner.download_url) {
+                    bannerImg.src = preferredBanner.download_url;
+                }
+            } catch (e) {
+                console.log('Используем стандартный список путей:', e);
+            }
+        }
+        autoDetectFromGitHubRepo();
+
+        let currentMode = 'track';
         let audioCtx = null;
         let analyser = null;
         let dataArray = null;
         let sourceNode = null;
         let isAudioSetup = false;
 
-        // Установка начального трека
         audioSource.src = GITHUB_TRACK_URL;
         radioPlayer.load();
 
-        // Если одно имя файла не подошло, автоматически проверяем следующее имя файла в вашем GitHub!
         radioPlayer.addEventListener('error', () => {
             if (currentMode === 'track') {
                 trackIdx++;
                 if (trackIdx < trackCandidates.length) {
                     GITHUB_TRACK_URL = trackCandidates[trackIdx];
-                    console.log('Пробуем загрузить трек по пути:', GITHUB_TRACK_URL);
                     audioSource.src = GITHUB_TRACK_URL;
                     radioPlayer.load();
                     radioPlayer.play().then(() => onPlayState(true)).catch(() => {});
@@ -755,7 +795,6 @@
             }
         }, true);
 
-        // Мгновенный запуск при открытии сайта или при первом же касании экрана на телефоне
         function unlockAudioOnFirstTouch() {
             if (radioPlayer.paused) {
                 initWebAudio();
@@ -862,7 +901,6 @@
 
         const clubColors = ['#00f0ff', '#ff007f', '#b14eff', '#00ff88', '#ffaa00'];
 
-        // Создание разряда молнии с левого или правого края экрана
         function createLightningBolt(side, intensity) {
             const startX = side === 'left'
                 ? Math.random() * (canvas.width * 0.16)
@@ -879,7 +917,6 @@
                 const nextY = currY + stepY;
                 segments.push({ x1: currX, y1: currY, x2: nextX, y2: nextY });
 
-                // Боковые ответвления молнии
                 if (Math.random() < 0.35) {
                     const branchX = nextX + (Math.random() - 0.5) * 80;
                     const branchY = nextY + stepY * (1 + Math.random());
@@ -921,7 +958,6 @@
                 midEnergy = (sumMid / 20) / 255;
             }
 
-            // Если поток блокирует чтение частот (CORS), включаем мощный ритмичный генератор 136 BPM (под ваш трек!)
             if (bassEnergy < 0.02) {
                 fallbackBeatTimer += 0.14;
                 const beatPulse = Math.pow((Math.sin(fallbackBeatTimer) + 1) / 2, 4);
@@ -929,7 +965,6 @@
                 midEnergy = 0.3 + Math.abs(Math.cos(fallbackBeatTimer * 1.5)) * 0.6;
             }
 
-            // Обновляем мини-эквалайзер в карточке
             eqBars.forEach((bar, idx) => {
                 const val = (isAudioSetup && dataArray && dataArray[idx * 2] > 0)
                     ? (dataArray[idx * 2] / 255) * 24
@@ -937,11 +972,9 @@
                 bar.style.height = Math.max(4, val) + 'px';
             });
 
-            // Качаем баннер в такт басу
             const scale = 1 + (bassEnergy > 0.65 ? (bassEnergy - 0.65) * 0.045 : 0);
             heroBanner.style.transform = `scale(${scale})`;
 
-            // Клубный стробоскоп по бокам экрана
             const leftGlow = Math.floor(bassEnergy * 220);
             const rightGlow = Math.floor(midEnergy * 220);
             visualizerBg.style.boxShadow = `
@@ -949,7 +982,6 @@
                 inset -${120 + rightGlow * 0.5}px 0 ${140 + rightGlow * 0.6}px rgba(255, 0, 127, ${midEnergy * 0.55})
             `;
 
-            // Генерируем молнии на ударах баса
             if (bassEnergy > 0.62 && Math.random() < 0.45) {
                 createLightningBolt('left', bassEnergy);
             }
@@ -957,7 +989,6 @@
                 createLightningBolt('right', Math.max(bassEnergy, midEnergy));
             }
 
-            // Рисуем все активные молнии
             for (let i = bolts.length - 1; i >= 0; i--) {
                 const b = bolts[i];
                 ctx.save();
@@ -970,10 +1001,10 @@
                     ctx.beginPath();
                     ctx.lineWidth = seg.isBranch ? b.lineWidth * 0.5 : b.lineWidth;
                     ctx.moveTo(seg.x1, seg.y1);
+                    ctx.moveTo(seg.x1, seg.y1);
                     ctx.lineTo(seg.x2, seg.y2);
                     ctx.stroke();
 
-                    // Белое раскаленное ядро внутри молнии
                     if (!seg.isBranch) {
                         ctx.beginPath();
                         ctx.strokeStyle = '#ffffff';
@@ -985,7 +1016,7 @@
                 });
                 ctx.restore();
 
-                b.alpha -= 0.075; // Скорость затухания вспышки молнии
+                b.alpha -= 0.075;
                 if (b.alpha <= 0) bolts.splice(i, 1);
             }
         }
