@@ -1,9 +1,10 @@
+```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CS:GO Stream & Deep House Radio</title>
+    <title>Михаил Грувик — CS:GO Stream & Club Radio</title>
     <style>
         * {
             margin: 0;
@@ -15,7 +16,7 @@
             width: 100%;
             min-height: 100vh;
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #0b0c10;
+            background-color: #07070c;
             color: #ffffff;
             display: flex;
             flex-direction: column;
@@ -24,7 +25,66 @@
             position: relative;
         }
 
-        /* Эффект цветомузыки по бокам */
+        /* Экран входа для запуска звука с первой секунды (требование современных браузеров) */
+        .welcome-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(20, 10, 40, 0.96) 0%, #050508 100%);
+            z-index: 99999999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(15px);
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .welcome-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .enter-btn {
+            padding: 20px 45px;
+            font-size: 1.4rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #fff;
+            background: linear-gradient(90deg, #ff007f, #00f0ff);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.6), 0 0 60px rgba(255, 0, 127, 0.4);
+            animation: pulseBtn 1.5s infinite alternate;
+            letter-spacing: 2px;
+            transition: transform 0.2s;
+        }
+
+        .enter-btn:hover {
+            transform: scale(1.08);
+        }
+
+        @keyframes pulseBtn {
+            0% { box-shadow: 0 0 20px rgba(0, 240, 255, 0.5), 0 0 40px rgba(255, 0, 127, 0.3); }
+            100% { box-shadow: 0 0 40px rgba(0, 240, 255, 0.9), 0 0 80px rgba(255, 0, 127, 0.8); }
+        }
+
+        /* Холст для клубных молний и лазеров по бокам */
+        #lightningCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Эффект клубного стробоскопа и свечения по краям */
         .music-visualizer-bg {
             position: fixed;
             top: 0;
@@ -34,31 +94,21 @@
             pointer-events: none;
             z-index: 1;
             opacity: 0;
-            transition: opacity 0.5s ease;
+            transition: opacity 0.4s ease;
         }
 
         .music-visualizer-bg.active {
             opacity: 1;
-            animation: colorPulse 2s infinite alternate ease-in-out;
         }
 
-        @keyframes colorPulse {
-            0% {
-                box-shadow: inset 150px 0 120px rgba(0, 255, 136, 0.4), inset -150px 0 120px rgba(255, 0, 128, 0.4);
-            }
-            100% {
-                box-shadow: inset 200px 0 180px rgba(0, 212, 255, 0.6), inset -200px 0 180px rgba(120, 0, 255, 0.6);
-            }
-        }
-
-        /* Кнопка радио в левом верхнем углу (Листок марихуаны) */
+        /* Кнопка радио в левом верхнем углу */
         .radio-top-btn {
             position: fixed !important;
             top: 15px !important;
             left: 15px !important;
             z-index: 9999999 !important;
-            width: 48px;
-            height: 48px;
+            width: 52px;
+            height: 52px;
             background: #14141a;
             border: 2px solid #00ff88;
             border-radius: 50%;
@@ -72,7 +122,7 @@
 
         .radio-top-btn:hover {
             transform: scale(1.1);
-            box-shadow: 0 0 25px rgba(0, 255, 136, 0.7);
+            box-shadow: 0 0 25px rgba(0, 255, 136, 0.8);
         }
 
         .radio-top-btn svg {
@@ -82,8 +132,14 @@
             transition: transform 0.3s linear;
         }
 
+        .radio-top-btn.playing {
+            border-color: #00f0ff;
+            box-shadow: 0 0 25px #00f0ff, inset 0 0 10px #ff007f;
+        }
+
         .radio-top-btn.playing svg {
-            animation: spinLeaf 3s linear infinite;
+            fill: #00f0ff;
+            animation: spinLeaf 2.5s linear infinite;
         }
 
         @keyframes spinLeaf {
@@ -91,14 +147,14 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Кнопка чата в правом верхнем углу (В виде молнии) */
+        /* Кнопка чата в правом верхнем углу */
         .chat-top-btn {
             position: fixed !important;
             top: 15px !important;
             right: 15px !important;
             z-index: 9999999 !important;
-            width: 48px;
-            height: 48px;
+            width: 52px;
+            height: 52px;
             background: #14141a;
             border: 2px solid #ffaa00;
             border-radius: 50%;
@@ -116,32 +172,41 @@
         }
 
         .chat-top-btn svg {
-            width: 24px;
-            height: 24px;
+            width: 26px;
+            height: 26px;
             fill: #ffaa00;
         }
 
         .wrapper {
             width: 100%;
-            max-width: 1000px;
+            max-width: 1050px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-top: 80px;
+            padding-top: 75px;
             padding-bottom: 60px;
             position: relative;
             z-index: 5;
         }
 
-        /* Баннер */
+        /* Баннер и интерактивные кнопки поверх/под ним */
+        .hero-banner-container {
+            width: 92%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
         .hero-banner {
-            width: 90%;
-            max-width: 800px;
+            width: 100%;
             position: relative;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
-            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 240, 255, 0.25);
+            border-radius: 18px;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(0, 240, 255, 0.35);
+            transition: box-shadow 0.15s ease, transform 0.15s ease;
+            background: #101018;
         }
 
         .hero-banner img {
@@ -150,74 +215,229 @@
             display: block;
         }
 
-        /* Блок кнопок управления */
+        /* Панель интерактивных кнопок под баннером (Twitch + соцсети с баннера) */
+        .banner-buttons-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            background: rgba(16, 16, 24, 0.9);
+            backdrop-filter: blur(12px);
+            padding: 14px 18px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
+        }
+
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            text-decoration: none;
+            color: #fff;
+            background: #1d1d2b;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+
+        .social-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        .social-btn.twitch {
+            background: linear-gradient(135deg, #9146FF, #6441a5);
+            border-color: #b17aff;
+            box-shadow: 0 0 15px rgba(145, 70, 255, 0.5);
+        }
+        .social-btn.twitch:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 0 25px rgba(145, 70, 255, 0.9);
+        }
+
+        .social-btn.vk:hover {
+            border-color: #0077FF;
+            color: #00f0ff;
+            box-shadow: 0 0 15px rgba(0, 119, 255, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .social-btn.tg:hover {
+            border-color: #2AABEE;
+            color: #2AABEE;
+            box-shadow: 0 0 15px rgba(42, 171, 238, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .social-btn.yt:hover {
+            border-color: #FF0000;
+            color: #ff4d4d;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .social-btn.ds:hover {
+            border-color: #5865F2;
+            color: #7983f5;
+            box-shadow: 0 0 15px rgba(88, 101, 242, 0.6);
+            transform: translateY(-2px);
+        }
+
+        /* Блок плеера и управления */
         .player-card {
-            width: 90%;
-            max-width: 500px;
-            margin: 20px auto;
+            width: 92%;
+            max-width: 560px;
+            margin: 18px auto 0;
             position: relative;
             z-index: 10;
-            background: rgba(20, 20, 26, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(18, 18, 26, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 240, 255, 0.25);
             border-radius: 16px;
             padding: 20px;
             text-align: center;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
         }
 
         .player-title {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: #ffaa00;
+            font-size: 1.05rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+            background: linear-gradient(90deg, #00f0ff, #ff007f, #ffaa00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+        }
+
+        .track-status {
+            font-size: 0.82rem;
+            color: #aaa;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #555;
+            display: inline-block;
+        }
+
+        .status-dot.online {
+            background: #00ff88;
+            box-shadow: 0 0 10px #00ff88;
+            animation: blink 0.8s infinite alternate;
+        }
+
+        @keyframes blink {
+            from { opacity: 0.4; }
+            to { opacity: 1; }
+        }
+
+        /* Эквалайзер полоски в плеере */
+        .mini-eq {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 3px;
+            height: 24px;
+            margin-bottom: 15px;
+        }
+
+        .eq-bar {
+            width: 5px;
+            height: 4px;
+            background: linear-gradient(to top, #00f0ff, #ff007f);
+            border-radius: 2px;
+            transition: height 0.05s ease;
+        }
+
+        .source-switch {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .chip-btn {
+            padding: 6px 14px;
+            font-size: 0.78rem;
+            border-radius: 20px;
+            background: #232332;
+            color: #bbb;
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 600;
+        }
+
+        .chip-btn.active {
+            background: rgba(0, 240, 255, 0.2);
+            color: #00f0ff;
+            border-color: #00f0ff;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
         }
 
         .btn-group {
             display: flex;
             gap: 10px;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
         .action-btn {
-            padding: 10px 20px;
-            background: #ffaa00;
+            padding: 11px 22px;
+            background: linear-gradient(135deg, #ffaa00, #ff6600);
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             color: #000;
-            font-weight: bold;
+            font-weight: 800;
             cursor: pointer;
             transition: 0.2s;
+            box-shadow: 0 4px 15px rgba(255, 170, 0, 0.3);
         }
 
         .action-btn:hover {
-            background: #e69900;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 170, 0, 0.6);
         }
 
         .action-btn.secondary {
-            background: #2a2a36;
+            background: #2a2a38;
             color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: none;
         }
 
         .action-btn.secondary:hover {
-            background: #3b3b4a;
+            background: #3b3b4f;
+            border-color: #00f0ff;
         }
 
-        /* Окно чата (выпадает под кнопкой в правом верхнем углу) */
+        /* Окно чата */
         .chat-card {
             position: fixed !important;
-            top: 70px !important;
+            top: 75px !important;
             right: 15px !important;
             z-index: 9999999 !important;
-            width: 300px;
-            background: #14141a;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 310px;
+            background: #14141d;
+            border: 1px solid rgba(0, 240, 255, 0.3);
             border-radius: 16px;
             padding: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.95);
             display: none;
             flex-direction: column;
         }
@@ -239,16 +459,16 @@
         .user-badge {
             font-size: 0.75rem;
             background: #2a2a36;
-            color: #ffaa00;
-            padding: 2px 8px;
+            color: #00f0ff;
+            padding: 3px 8px;
             border-radius: 12px;
             font-weight: bold;
         }
 
         .chat-messages {
-            height: 200px;
+            height: 210px;
             overflow-y: auto;
-            background: #0d0d12;
+            background: #0b0b10;
             border-radius: 8px;
             padding: 10px;
             margin-bottom: 10px;
@@ -284,8 +504,8 @@
         .chat-input-area input {
             flex: 1;
             padding: 8px 12px;
-            background: #1c1c24;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #1c1c26;
+            border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 6px;
             color: #fff;
             font-size: 0.85rem;
@@ -309,7 +529,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.82);
             z-index: 10000000;
             display: none;
             justify-content: center;
@@ -321,20 +541,21 @@
         }
 
         .modal-box {
-            background: #181820;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #181822;
+            border: 1px solid rgba(0, 240, 255, 0.25);
             border-radius: 16px;
             padding: 25px;
             width: 90%;
-            max-width: 400px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            max-width: 420px;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.9);
             position: relative;
         }
 
         .modal-title {
             font-size: 1.2rem;
-            color: #ffaa00;
+            color: #00f0ff;
             margin-bottom: 15px;
+            font-weight: 700;
         }
 
         .close-btn {
@@ -352,7 +573,7 @@
             width: 100%;
             padding: 10px;
             margin-bottom: 10px;
-            background: #111;
+            background: #101016;
             border: 1px solid #333;
             border-radius: 6px;
             color: #fff;
@@ -361,23 +582,34 @@
 </head>
 <body>
 
-    <!-- Эффект цветомузыки по бокам -->
+    <!-- Экран входа для мгновенного запуска трека и клубных молний -->
+    <div class="welcome-overlay" id="welcomeOverlay" onclick="startExperience()">
+        <p style="color: #00f0ff; font-size: 0.9rem; letter-spacing: 3px; margin-bottom: 15px; text-transform: uppercase;">Михаил Грувик • Official Stream Hub</p>
+        <button class="enter-btn">⚡ ВОЙТИ НА СТРИМ ⚡</button>
+        <p style="color: #888; font-size: 0.8rem; margin-top: 14px;">Нажмите в любом месте для включения звука и клубных молний</p>
+    </div>
+
+    <!-- Клубная подсветка по краям -->
     <div class="music-visualizer-bg" id="musicVisualizer"></div>
 
-    <!-- Аудио поток радио -->
-    <audio id="radioPlayer" preload="none">
-        <source src="https://dancewave.online/dance.mp3" type="audio/mpeg">
+    <!-- Холст для генерации неоновых молний по бокам под бит -->
+    <canvas id="lightningCanvas"></canvas>
+
+    <!-- Аудио плеер (crossorigin нужен для работы анализатора частот с GitHub) -->
+    <audio id="radioPlayer" crossorigin="anonymous" loop preload="auto">
+        <!-- ЗАМЕНИТЕ ССЫЛКУ НИЖЕ НА ВАШ ФАЙЛ НА GITHUB (например: track.mp3) -->
+        <source id="audioSource" src="track.mp3" type="audio/mpeg">
         Ваш браузер не поддерживает аудиопроигрыватель.
     </audio>
 
-    <!-- Кнопка Радио в левом верхнем углу (Анимированный детальный листок марихуаны) -->
-    <div class="radio-top-btn" id="radioBtn" onclick="toggleRadio()" title="Включить / Выключить радио">
+    <!-- Кнопка Радио в левом верхнем углу -->
+    <div class="radio-top-btn" id="radioBtn" onclick="toggleRadio()" title="Включить / Выключить музыку">
         <svg viewBox="0 0 24 24">
             <path d="M12,2C11.5,2 11,2.2 10.6,2.5C8.5,4 6.5,6.5 6,8.5C5.5,10.5 6,12.5 7,14C6,14.5 5,15 4,15.5C3,16 2.5,17 3,18C3.5,19 4.5,19.5 5.5,19C6.5,18.5 7.5,17.5 8.5,17C9,18 9.5,19 10,20C10.5,21 11.5,22 12.5,22C13.5,22 14.5,21 15,20C15.5,19 16,18 16.5,17C17.5,17.5 18.5,18.5 19.5,19C20.5,19.5 21.5,19 22,18C22.5,17 22,16 21,15.5C20,15 19,14.5 18,14C19,12.5 19.5,10.5 19,8.5C18.5,6.5 16.5,4 14.4,2.5C14,2.2 13.5,2 13,2H12M12,4.2C12.3,4.2 12.6,4.4 12.9,4.6C14.5,5.8 16.2,7.8 16.6,9.3C17,10.8 16.5,12.2 15.5,13.5C15.2,13.9 14.9,14.3 14.6,14.6C14.2,14.2 13.8,13.8 13.4,13.5C14.2,12.2 14.5,10.8 14.2,9.5C14,8.8 13.2,7.5 12,6.5C10.8,7.5 10,8.8 9.8,9.5C9.5,10.8 9.8,12.2 10.6,13.5C10.2,13.8 9.8,14.2 9.4,14.6C9.1,14.3 8.8,13.9 8.5,13.5C7.5,12.2 7,10.8 7.4,9.3C7.8,7.8 9.5,5.8 11.1,4.6C11.4,4.4 11.7,4.2 12,4.2Z"/>
         </svg>
     </div>
 
-    <!-- Кнопка Чат в правом верхнем углу (В виде молнии) -->
+    <!-- Кнопка Чат в правом верхнем углу -->
     <div class="chat-top-btn" onclick="toggleChat()" title="Открыть чат">
         <svg viewBox="0 0 24 24">
             <path d="M11 15H6L13 2V9H18L11 22V15Z"/>
@@ -385,20 +617,65 @@
     </div>
 
     <div class="wrapper">
-        <div class="hero-banner">
-            <img src="https://raw.githubusercontent.com/ddevelop859-hue/-/44a1541bb99fd2168288254c875d13148e225176/images/1789038451964.png" alt="CS:GO Stream Banner">
+        <!-- Контейнер Баннера + Кнопки -->
+        <div class="hero-banner-container">
+            <div class="hero-banner" id="heroBanner">
+                <!-- Положите картинку нового баннера в репозиторий под именем banner.jpg или оставьте ссылку -->
+                <img id="bannerImg" src="banner.jpg" onerror="this.src='https://raw.githubusercontent.com/ddevelop859-hue/-/44a1541bb99fd2168288254c875d13148e225176/images/1789038451964.png'" alt="Михаил Грувик — CS:GO Stream Banner">
+            </div>
+
+            <!-- Кнопки соцсетей и Твича под баннером -->
+            <div class="banner-buttons-bar">
+                <a href="https://www.twitch.tv/mihailgruvik" target="_blank" id="linkTwitch" class="social-btn twitch">
+                    <svg viewBox="0 0 24 24"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
+                    Смотреть Twitch
+                </a>
+                <a href="https://vk.com/" target="_blank" id="linkVk" class="social-btn vk">
+                    ВКонтакте
+                </a>
+                <a href="https://t.me/" target="_blank" id="linkTg" class="social-btn tg">
+                    Telegram
+                </a>
+                <a href="https://discord.com/" target="_blank" id="linkDs" class="social-btn ds">
+                    Discord
+                </a>
+                <a href="https://youtube.com/" target="_blank" id="linkYt" class="social-btn yt">
+                    YouTube
+                </a>
+            </div>
         </div>
 
+        <!-- Карточка управления музыкой и донатом -->
         <div class="player-card">
-            <div class="player-title">Techno & Deep House Radio</div>
+            <div class="player-title">⚡ Club Rave & CS:GO Beats ⚡</div>
+            <div class="track-status">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="trackStatusText">Нажмите кнопку Play или войдите на стрим</span>
+            </div>
+
+            <!-- Мини-эквалайзер -->
+            <div class="mini-eq" id="miniEq">
+                <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+                <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+            </div>
+
+            <!-- Переключатель: Ваш трек с GitHub или Онлайн Радио -->
+            <div class="source-switch">
+                <button class="chip-btn active" id="btnTrack" onclick="switchAudioSource('track')">🎵 Мой Трек (GitHub)</button>
+                <button class="chip-btn" id="btnRadio" onclick="switchAudioSource('radio')">📻 Deep House Радио</button>
+            </div>
+
             <div class="btn-group">
-                <button class="action-btn" onclick="openModal('donateModal')">Донат</button>
-                <button class="action-btn secondary" id="authBtn" onclick="openModal('loginModal')">Кабинет</button>
+                <button class="action-btn" onclick="toggleRadio()" id="mainPlayBtn">▶ Пауза / Пуск</button>
+                <button class="action-btn" onclick="openModal('donateModal')">💰 Донат</button>
+                <button class="action-btn secondary" id="authBtn" onclick="openModal('loginModal')">⚙ Кабинет</button>
             </div>
         </div>
     </div>
 
-    <!-- Виджет чата (в правом верхнем углу) -->
+    <!-- Виджет чата -->
     <div class="chat-card" id="chatCard">
         <div class="chat-header">
             <h2>Онлайн Чат</h2>
@@ -407,7 +684,7 @@
         
         <div class="chat-messages" id="chatMessages">
             <div class="chat-msg">
-                <span class="author" style="color:#00ff88;">Система:</span> Чат активен!
+                <span class="author" style="color:#00ff88;">Система:</span> Добро пожаловать на стрим Михаила Грувика! Здесь ищут фраги!
             </div>
         </div>
 
@@ -421,10 +698,10 @@
     <div class="modal-overlay" id="donateModal">
         <div class="modal-box">
             <button class="close-btn" onclick="closeModal('donateModal')">✕</button>
-            <div class="modal-title">Поддержать стримера</div>
+            <div class="modal-title">Поддержать стримера (Михаил Грувик)</div>
             <div id="donateInfoText">
                 <p style="color: #ccc; margin-bottom: 10px;">Реквизиты для перевода:</p>
-                <div id="donateDetails" style="background: #0d0d12; padding: 12px; border-radius: 8px; font-family: monospace; color: #ffaa00;">
+                <div id="donateDetails" style="background: #0d0d12; padding: 14px; border-radius: 8px; font-family: monospace; color: #ffaa00; border: 1px solid rgba(255,170,0,0.3);">
                     Данные доната пока не указаны.
                 </div>
             </div>
@@ -446,32 +723,289 @@
 
             <div id="adminPanel" style="display: none;">
                 <div class="modal-title">Панель управления (gruvik)</div>
-                <p style="font-size: 0.9rem; color: #ccc; margin-bottom: 8px;">Настройки реквизитов доната:</p>
-                <textarea id="donateConfigInput" class="modal-input" rows="4" placeholder="Введите текст или реквизиты доната..."></textarea>
-                <button class="action-btn" style="width: 100%; margin-bottom: 8px;" onclick="saveDonateSettings()">Сохранить</button>
+                <p style="font-size: 0.85rem; color: #ccc; margin-bottom: 6px;">Ссылка на ваш трек (GitHub raw):</p>
+                <input type="text" id="customTrackInput" class="modal-input" placeholder="track.mp3 или https://raw.githubusercontent.com/...">
+                
+                <p style="font-size: 0.85rem; color: #ccc; margin-bottom: 6px;">Реквизиты доната:</p>
+                <textarea id="donateConfigInput" class="modal-input" rows="3" placeholder="Введите номер карты или ссылку DonationAlerts..."></textarea>
+                
+                <button class="action-btn" style="width: 100%; margin-bottom: 8px;" onclick="saveAdminSettings()">Сохранить настройки</button>
                 <button class="action-btn secondary" style="width: 100%;" onclick="logout()">Выйти</button>
             </div>
         </div>
     </div>
 
     <script>
-        const radioPlayer = document.getElementById('radioPlayer');
-        const radioBtn = document.getElementById('radioBtn');
-        const visualizer = document.getElementById('musicVisualizer');
+        // ================= НАСТРОЙКИ ПУТЕЙ НА GITHUB =================
+        // Когда загрузите ваш трек на GitHub в ту же папку, назовите его track.mp3
+        // Или вставьте прямую Raw-ссылку с GitHub сюда:
+        let GITHUB_TRACK_URL = localStorage.getItem('gruvik_track_url') || 'track.mp3';
+        const RADIO_STREAM_URL = 'https://dancewave.online/dance.mp3';
 
-        function toggleRadio() {
-            if (radioPlayer.paused) {
-                radioPlayer.play().then(() => {
-                    radioBtn.classList.add('playing');
-                    visualizer.classList.add('active');
-                }).catch(e => console.log("Ошибка воспроизведения:", e));
-            } else {
-                radioPlayer.pause();
-                radioBtn.classList.remove('playing');
-                visualizer.classList.remove('active');
+        const radioPlayer = document.getElementById('radioPlayer');
+        const audioSource = document.getElementById('audioSource');
+        const radioBtn = document.getElementById('radioBtn');
+        const visualizerBg = document.getElementById('musicVisualizer');
+        const statusDot = document.getElementById('statusDot');
+        const trackStatusText = document.getElementById('trackStatusText');
+        const heroBanner = document.getElementById('heroBanner');
+        const eqBars = document.querySelectorAll('.eq-bar');
+
+        let currentMode = 'track'; // 'track' или 'radio'
+        let audioCtx = null;
+        let analyser = null;
+        let dataArray = null;
+        let sourceNode = null;
+        let isAudioSetup = false;
+
+        // Установка начального трека
+        audioSource.src = GITHUB_TRACK_URL;
+        radioPlayer.load();
+
+        // Если локальный файл track.mp3 еще не загружен на GitHub, автоматически подхватываем радио, чтобы музыка играла всегда!
+        radioPlayer.addEventListener('error', () => {
+            if (currentMode === 'track') {
+                console.log('Файл track.mp3 не найден, переключаем на резервный поток радио.');
+                audioSource.src = RADIO_STREAM_URL;
+                radioPlayer.load();
+                trackStatusText.innerText = 'Играет: Club Stream (загрузите track.mp3 на GitHub)';
+            }
+        }, true);
+
+        // Запуск при входе на сайт
+        function startExperience() {
+            document.getElementById('welcomeOverlay').classList.add('hidden');
+            initWebAudio();
+            playAudio();
+        }
+
+        // Попытка автозапуска при открытии (если браузер разрешает без клика)
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedDonate = localStorage.getItem('gruvik_donate');
+            if (savedDonate) document.getElementById('donateDetails').innerText = savedDonate;
+
+            radioPlayer.play().then(() => {
+                document.getElementById('welcomeOverlay').classList.add('hidden');
+                initWebAudio();
+                onPlayState(true);
+            }).catch(() => {
+                // Браузер ждет первого клика по кнопке "ВОЙТИ НА СТРИМ"
+            });
+        });
+
+        function initWebAudio() {
+            if (isAudioSetup) return;
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+                analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 128;
+                const bufferLength = analyser.frequencyBinCount;
+                dataArray = new Uint8Array(bufferLength);
+
+                sourceNode = audioCtx.createMediaElementSource(radioPlayer);
+                sourceNode.connect(analyser);
+                analyser.connect(audioCtx.destination);
+                isAudioSetup = true;
+            } catch (err) {
+                console.log('Анализатор работает в режиме симуляции бита (CORS):', err);
             }
         }
 
+        function playAudio() {
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            radioPlayer.play().then(() => {
+                onPlayState(true);
+            }).catch(err => {
+                console.log("Ошибка воспроизведения:", err);
+                onPlayState(false);
+            });
+        }
+
+        function toggleRadio() {
+            initWebAudio();
+            if (radioPlayer.paused) {
+                playAudio();
+            } else {
+                radioPlayer.pause();
+                onPlayState(false);
+            }
+        }
+
+        function onPlayState(isPlaying) {
+            if (isPlaying) {
+                radioBtn.classList.add('playing');
+                visualizerBg.classList.add('active');
+                statusDot.classList.add('online');
+                trackStatusText.innerText = currentMode === 'track'
+                    ? 'В эфире: Михаил Грувик — Rave Track (136 BPM)'
+                    : 'В эфире: Techno & Deep House Radio';
+            } else {
+                radioBtn.classList.remove('playing');
+                visualizerBg.classList.remove('active');
+                statusDot.classList.remove('online');
+                trackStatusText.innerText = 'На паузе';
+                heroBanner.style.transform = 'scale(1)';
+                eqBars.forEach(bar => bar.style.height = '4px');
+            }
+        }
+
+        function switchAudioSource(mode) {
+            currentMode = mode;
+            document.getElementById('btnTrack').classList.toggle('active', mode === 'track');
+            document.getElementById('btnRadio').classList.toggle('active', mode === 'radio');
+
+            audioSource.src = (mode === 'track') ? GITHUB_TRACK_URL : RADIO_STREAM_URL;
+            radioPlayer.load();
+            playAudio();
+        }
+
+        // ================= КЛУБНЫЕ МОЛНИИ И ЛАЗЕРЫ ПО БОКАМ (CANVAS) =================
+        const canvas = document.getElementById('lightningCanvas');
+        const ctx = canvas.getContext('2d');
+        let bolts = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const clubColors = ['#00f0ff', '#ff007f', '#b14eff', '#00ff88', '#ffaa00'];
+
+        // Создание разряда молнии с левого или правого края экрана
+        function createLightningBolt(side, intensity) {
+            const startX = side === 'left'
+                ? Math.random() * (canvas.width * 0.16)
+                : canvas.width - Math.random() * (canvas.width * 0.16);
+            const startY = Math.random() * canvas.height * 0.3;
+            const segments = [];
+            let currX = startX;
+            let currY = startY;
+            const steps = 12 + Math.floor(Math.random() * 10);
+            const stepY = (canvas.height - startY) / steps;
+
+            for (let i = 0; i < steps; i++) {
+                const nextX = currX + (Math.random() - 0.5) * (45 + intensity * 60);
+                const nextY = currY + stepY;
+                segments.push({ x1: currX, y1: currY, x2: nextX, y2: nextY });
+
+                // Боковые ответвления молнии
+                if (Math.random() < 0.35) {
+                    const branchX = nextX + (Math.random() - 0.5) * 80;
+                    const branchY = nextY + stepY * (1 + Math.random());
+                    segments.push({ x1: nextX, y1: nextY, x2: branchX, y2: branchY, isBranch: true });
+                }
+
+                currX = nextX;
+                currY = nextY;
+            }
+
+            bolts.push({
+                segments,
+                color: clubColors[Math.floor(Math.random() * clubColors.length)],
+                alpha: 1.0,
+                lineWidth: 2 + intensity * 3.5
+            });
+        }
+
+        let fallbackBeatTimer = 0;
+
+        function renderClubVisuals() {
+            requestAnimationFrame(renderClubVisuals);
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (radioPlayer.paused) return;
+
+            let bassEnergy = 0;
+            let midEnergy = 0;
+
+            if (isAudioSetup && analyser) {
+                analyser.getByteFrequencyData(dataArray);
+                let sumBass = 0;
+                for (let i = 0; i < 10; i++) sumBass += dataArray[i];
+                bassEnergy = (sumBass / 10) / 255;
+
+                let sumMid = 0;
+                for (let i = 10; i < 30; i++) sumMid += dataArray[i];
+                midEnergy = (sumMid / 20) / 255;
+            }
+
+            // Если поток блокирует чтение частот (CORS), включаем мощный ритмичный генератор 136 BPM (под ваш трек!)
+            if (bassEnergy < 0.02) {
+                fallbackBeatTimer += 0.14;
+                const beatPulse = Math.pow((Math.sin(fallbackBeatTimer) + 1) / 2, 4);
+                bassEnergy = 0.35 + beatPulse * 0.65;
+                midEnergy = 0.3 + Math.abs(Math.cos(fallbackBeatTimer * 1.5)) * 0.6;
+            }
+
+            // Обновляем мини-эквалайзер в карточке
+            eqBars.forEach((bar, idx) => {
+                const val = (isAudioSetup && dataArray && dataArray[idx * 2] > 0)
+                    ? (dataArray[idx * 2] / 255) * 24
+                    : (Math.sin(fallbackBeatTimer + idx) * 0.5 + 0.5) * 22 * bassEnergy;
+                bar.style.height = Math.max(4, val) + 'px';
+            });
+
+            // Качаем баннер в такт басу
+            const scale = 1 + (bassEnergy > 0.65 ? (bassEnergy - 0.65) * 0.045 : 0);
+            heroBanner.style.transform = `scale(${scale})`;
+
+            // Клубный стробоскоп по бокам экрана
+            const leftGlow = Math.floor(bassEnergy * 220);
+            const rightGlow = Math.floor(midEnergy * 220);
+            visualizerBg.style.boxShadow = `
+                inset ${120 + leftGlow * 0.5}px 0 ${140 + leftGlow * 0.6}px rgba(0, 240, 255, ${bassEnergy * 0.55}),
+                inset -${120 + rightGlow * 0.5}px 0 ${140 + rightGlow * 0.6}px rgba(255, 0, 127, ${midEnergy * 0.55})
+            `;
+
+            // Генерируем молнии на ударах баса
+            if (bassEnergy > 0.62 && Math.random() < 0.45) {
+                createLightningBolt('left', bassEnergy);
+            }
+            if ((midEnergy > 0.58 || bassEnergy > 0.7) && Math.random() < 0.45) {
+                createLightningBolt('right', Math.max(bassEnergy, midEnergy));
+            }
+
+            // Рисуем все активные молнии
+            for (let i = bolts.length - 1; i >= 0; i--) {
+                const b = bolts[i];
+                ctx.save();
+                ctx.globalAlpha = b.alpha;
+                ctx.strokeStyle = b.color;
+                ctx.shadowColor = b.color;
+                ctx.shadowBlur = 20;
+
+                b.segments.forEach(seg => {
+                    ctx.beginPath();
+                    ctx.lineWidth = seg.isBranch ? b.lineWidth * 0.5 : b.lineWidth;
+                    ctx.moveTo(seg.x1, seg.y1);
+                    ctx.lineTo(seg.x2, seg.y2);
+                    ctx.stroke();
+
+                    // Белое раскаленное ядро внутри молнии
+                    if (!seg.isBranch) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = b.lineWidth * 0.35;
+                        ctx.moveTo(seg.x1, seg.y1);
+                        ctx.lineTo(seg.x2, seg.y2);
+                        ctx.stroke();
+                    }
+                });
+                ctx.restore();
+
+                b.alpha -= 0.075; // Скорость затухания вспышки молнии
+                if (b.alpha <= 0) bolts.splice(i, 1);
+            }
+        }
+        renderClubVisuals();
+
+        // ================= ЧАТ И ЛИЧНЫЙ КАБИНЕТ =================
         const randomId = 'User_' + Math.floor(1000 + Math.random() * 9000);
         document.getElementById('userBadge').innerText = randomId;
 
@@ -520,7 +1054,8 @@
                 errorDiv.innerText = '';
                 document.getElementById('loginForm').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
-                document.getElementById('authBtn').innerText = 'ЛК (gruvik)';
+                document.getElementById('authBtn').innerText = '⚙ ЛК (gruvik)';
+                document.getElementById('customTrackInput').value = GITHUB_TRACK_URL;
             } else {
                 errorDiv.innerText = 'Неверный логин или пароль!';
             }
@@ -529,20 +1064,33 @@
         function logout() {
             document.getElementById('loginForm').style.display = 'block';
             document.getElementById('adminPanel').style.display = 'none';
-            document.getElementById('authBtn').innerText = 'Кабинет';
+            document.getElementById('authBtn').innerText = '⚙ Кабинет';
             document.getElementById('loginInput').value = '';
             document.getElementById('passInput').value = '';
             closeModal('loginModal');
         }
 
-        function saveDonateSettings() {
-            const val = document.getElementById('donateConfigInput').value;
-            if (val.trim() !== '') {
-                document.getElementById('donateDetails').innerText = val;
-                alert('Настройки доната сохранены!');
-                closeModal('loginModal');
+        function saveAdminSettings() {
+            const donateVal = document.getElementById('donateConfigInput').value.trim();
+            const trackVal = document.getElementById('customTrackInput').value.trim();
+
+            if (donateVal !== '') {
+                document.getElementById('donateDetails').innerText = donateVal;
+                localStorage.setItem('gruvik_donate', donateVal);
             }
+            if (trackVal !== '') {
+                GITHUB_TRACK_URL = trackVal;
+                localStorage.setItem('gruvik_track_url', trackVal);
+                if (currentMode === 'track') {
+                    audioSource.src = GITHUB_TRACK_URL;
+                    radioPlayer.load();
+                    playAudio();
+                }
+            }
+            alert('Настройки успешно сохранены!');
+            closeModal('loginModal');
         }
     </script>
 </body>
 </html>
+```
