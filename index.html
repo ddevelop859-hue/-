@@ -25,54 +25,6 @@
             position: relative;
         }
 
-        /* Экран входа для запуска звука с первой секунды (требование современных браузеров) */
-        .welcome-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at center, rgba(20, 10, 40, 0.96) 0%, #050508 100%);
-            z-index: 99999999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(15px);
-            transition: opacity 0.5s ease, visibility 0.5s ease;
-        }
-
-        .welcome-overlay.hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-
-        .enter-btn {
-            padding: 20px 45px;
-            font-size: 1.4rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            color: #fff;
-            background: linear-gradient(90deg, #ff007f, #00f0ff);
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 0 30px rgba(0, 240, 255, 0.6), 0 0 60px rgba(255, 0, 127, 0.4);
-            animation: pulseBtn 1.5s infinite alternate;
-            letter-spacing: 2px;
-            transition: transform 0.2s;
-        }
-
-        .enter-btn:hover {
-            transform: scale(1.08);
-        }
-
-        @keyframes pulseBtn {
-            0% { box-shadow: 0 0 20px rgba(0, 240, 255, 0.5), 0 0 40px rgba(255, 0, 127, 0.3); }
-            100% { box-shadow: 0 0 40px rgba(0, 240, 255, 0.9), 0 0 80px rgba(255, 0, 127, 0.8); }
-        }
-
         /* Холст для клубных молний и лазеров по бокам */
         #lightningCanvas {
             position: fixed;
@@ -582,23 +534,15 @@
 </head>
 <body>
 
-    <!-- Экран входа для мгновенного запуска трека и клубных молний -->
-    <div class="welcome-overlay" id="welcomeOverlay" onclick="startExperience()">
-        <p style="color: #00f0ff; font-size: 0.9rem; letter-spacing: 3px; margin-bottom: 15px; text-transform: uppercase;">Михаил Грувик • Official Stream Hub</p>
-        <button class="enter-btn">⚡ ВОЙТИ НА СТРИМ ⚡</button>
-        <p style="color: #888; font-size: 0.8rem; margin-top: 14px;">Нажмите в любом месте для включения звука и клубных молний</p>
-    </div>
-
     <!-- Клубная подсветка по краям -->
     <div class="music-visualizer-bg" id="musicVisualizer"></div>
 
     <!-- Холст для генерации неоновых молний по бокам под бит -->
     <canvas id="lightningCanvas"></canvas>
 
-    <!-- Аудио плеер (crossorigin нужен для работы анализатора частот с GitHub) -->
-    <audio id="radioPlayer" crossorigin="anonymous" loop preload="auto">
-        <!-- ЗАМЕНИТЕ ССЫЛКУ НИЖЕ НА ВАШ ФАЙЛ НА GITHUB (например: track.mp3) -->
-        <source id="audioSource" src="track.mp3" type="audio/mpeg">
+    <!-- Аудио плеер (автоматически проверяет все возможные названия вашего трека на GitHub) -->
+    <audio id="radioPlayer" loop preload="auto" autoplay>
+        <source id="audioSource" src="Orbital_-_Technologic_Park_(SkySound.cc).mp3" type="audio/mpeg">
         Ваш браузер не поддерживает аудиопроигрыватель.
     </audio>
 
@@ -619,9 +563,9 @@
     <div class="wrapper">
         <!-- Контейнер Баннера + Кнопки -->
         <div class="hero-banner-container">
-            <div class="hero-banner" id="heroBanner">
-                <!-- Положите картинку нового баннера в репозиторий под именем banner.jpg или оставьте ссылку -->
-                <img id="bannerImg" src="banner.jpg" onerror="this.src='https://raw.githubusercontent.com/ddevelop859-hue/-/44a1541bb99fd2168288254c875d13148e225176/images/1789038451964.png'" alt="Михаил Грувик — CS:GO Stream Banner">
+            <div class="hero-banner" id="heroBanner" onclick="playAudio()" style="cursor: pointer;" title="Нажмите для включения трека и молний">
+                <!-- Умная загрузка баннера: ищет ваш загруженный banner в корне или папке images -->
+                <img id="bannerImg" src="banner.jpg" alt="Михаил Грувик — CS:GO Stream Banner">
             </div>
 
             <!-- Кнопки соцсетей и Твича под баннером -->
@@ -736,10 +680,45 @@
     </div>
 
     <script>
-        // ================= НАСТРОЙКИ ПУТЕЙ НА GITHUB =================
-        // Когда загрузите ваш трек на GitHub в ту же папку, назовите его track.mp3
-        // Или вставьте прямую Raw-ссылку с GitHub сюда:
-        let GITHUB_TRACK_URL = localStorage.getItem('gruvik_track_url') || 'track.mp3';
+        // ================= АВТОПОИСК БАННЕРА И ТРЕКА В ВАШЕМ GITHUB =================
+        const bannerCandidates = [
+            'banner.jpg',
+            'banner.png',
+            'banner.jpeg',
+            'images/banner.jpg',
+            'images/banner.png',
+            'images/1789038451964.png',
+            'https://raw.githubusercontent.com/ddevelop859-hue/-/main/banner.jpg',
+            'https://raw.githubusercontent.com/ddevelop859-hue/-/main/banner.png',
+            'https://raw.githubusercontent.com/ddevelop859-hue/-/main/images/banner.jpg',
+            'https://raw.githubusercontent.com/ddevelop859-hue/-/main/images/banner.png',
+            'https://raw.githubusercontent.com/ddevelop859-hue/-/44a1541bb99fd2168288254c875d13148e225176/images/1789038451964.png'
+        ];
+        let bannerIdx = 0;
+        const bannerImg = document.getElementById('bannerImg');
+        bannerImg.onerror = function() {
+            bannerIdx++;
+            if (bannerIdx < bannerCandidates.length) {
+                bannerImg.src = bannerCandidates[bannerIdx];
+            }
+        };
+
+        // Список возможных путей к вашему треку на GitHub
+        const trackCandidates = [
+            localStorage.getItem('gruvik_track_url'),
+            'Orbital_-_Technologic_Park_(SkySound.cc).mp3',
+            'track.mp3',
+            'music.mp3',
+            'audio.mp3',
+            'images/Orbital_-_Technologic_Park_(SkySound.cc).mp3',
+            'images/track.mp3',
+            'https://raw.githubusercontent.com/ddevelop859-hue/-/main/Orbital_-_Technologic_Park_(SkySound.cc).mp3',
+            'https://raw.githubusercontent.com/ddevelop859-hue/-/main/track.mp3',
+            'https://dancewave.online/dance.mp3'
+        ].filter(Boolean);
+
+        let trackIdx = 0;
+        let GITHUB_TRACK_URL = trackCandidates[0];
         const RADIO_STREAM_URL = 'https://dancewave.online/dance.mp3';
 
         const radioPlayer = document.getElementById('radioPlayer');
@@ -762,34 +741,41 @@
         audioSource.src = GITHUB_TRACK_URL;
         radioPlayer.load();
 
-        // Если локальный файл track.mp3 еще не загружен на GitHub, автоматически подхватываем радио, чтобы музыка играла всегда!
+        // Если одно имя файла не подошло, автоматически проверяем следующее имя файла в вашем GitHub!
         radioPlayer.addEventListener('error', () => {
             if (currentMode === 'track') {
-                console.log('Файл track.mp3 не найден, переключаем на резервный поток радио.');
-                audioSource.src = RADIO_STREAM_URL;
-                radioPlayer.load();
-                trackStatusText.innerText = 'Играет: Club Stream (загрузите track.mp3 на GitHub)';
+                trackIdx++;
+                if (trackIdx < trackCandidates.length) {
+                    GITHUB_TRACK_URL = trackCandidates[trackIdx];
+                    console.log('Пробуем загрузить трек по пути:', GITHUB_TRACK_URL);
+                    audioSource.src = GITHUB_TRACK_URL;
+                    radioPlayer.load();
+                    radioPlayer.play().then(() => onPlayState(true)).catch(() => {});
+                }
             }
         }, true);
 
-        // Запуск при входе на сайт
-        function startExperience() {
-            document.getElementById('welcomeOverlay').classList.add('hidden');
-            initWebAudio();
-            playAudio();
+        // Мгновенный запуск при открытии сайта или при первом же касании экрана на телефоне
+        function unlockAudioOnFirstTouch() {
+            if (radioPlayer.paused) {
+                initWebAudio();
+                playAudio();
+            }
         }
 
-        // Попытка автозапуска при открытии (если браузер разрешает без клика)
+        window.addEventListener('click', unlockAudioOnFirstTouch, { once: true });
+        window.addEventListener('touchstart', unlockAudioOnFirstTouch, { once: true });
+        window.addEventListener('keydown', unlockAudioOnFirstTouch, { once: true });
+
         window.addEventListener('DOMContentLoaded', () => {
             const savedDonate = localStorage.getItem('gruvik_donate');
             if (savedDonate) document.getElementById('donateDetails').innerText = savedDonate;
 
             radioPlayer.play().then(() => {
-                document.getElementById('welcomeOverlay').classList.add('hidden');
                 initWebAudio();
                 onPlayState(true);
             }).catch(() => {
-                // Браузер ждет первого клика по кнопке "ВОЙТИ НА СТРИМ"
+                trackStatusText.innerText = 'Нажмите в любом месте экрана для запуска звука ⚡';
             });
         });
 
@@ -840,7 +826,7 @@
                 visualizerBg.classList.add('active');
                 statusDot.classList.add('online');
                 trackStatusText.innerText = currentMode === 'track'
-                    ? 'В эфире: Михаил Грувик — Rave Track (136 BPM)'
+                    ? 'В эфире: Orbital — Technologic Park (Club Rave)'
                     : 'В эфире: Techno & Deep House Radio';
             } else {
                 radioBtn.classList.remove('playing');
@@ -1087,7 +1073,7 @@
                     playAudio();
                 }
             }
-            alert('Настройки успешно сохранены!');
+            trackStatusText.innerText = 'Настройки успешно сохранены!';
             closeModal('loginModal');
         }
     </script>
